@@ -46,32 +46,33 @@ public class Analysis {
 	public static class AnalysisMapper extends MapReduceBase implements
 			Mapper<Object, Text, NullWritable, Text> {
 		private final static NullWritable myNull = NullWritable.get();
-		private final static int[] indexArr = new int[] {4,10,14,15,16,17, 18, 23, 24,25 };
+		private final static int[] indexArr = new int[] { 4, 10, 14, 15, 16,
+				17, 18, 23, 24, 25 };
 
 		@Override
 		public void map(Object key, Text value,
 				OutputCollector<NullWritable, Text> output, Reporter reporter)
 				throws IOException {
-			List tokens = new ArrayList(Arrays.asList(value.toString().split("	")));
-			// if (Float.valueOf(tokens[0]) != 0) {
-			// output.collect(myNull, value);
-			// }
-			String end = tokens.get(24).toString();
-			
-			for (int i = indexArr.length - 1; i >= 0; i--) {
-				if (i <= tokens.size()) {
-					tokens.remove(indexArr[i]-1);
+			List<String> tokens = new ArrayList<String>(Arrays.asList(value
+					.toString().split("	")));
+			if (Float.parseFloat(tokens.get(0).toString()) != 0) {
+				String end = tokens.get(24).toString();
+
+				for (int i = indexArr.length - 1; i >= 0; i--) {
+					if (i <= tokens.size()) {
+						tokens.remove(indexArr[i] - 1);
+					}
 				}
+				tokens.add(end);
+				output.collect(myNull, new Text(ListToString(tokens)));
 			}
-			tokens.add(end);
-			output.collect(myNull, new Text(ListToString(tokens)));
 
 		}
 	}
 
 	public static void main(String[] args) throws Exception {
-		String input = "hdfs://namenode:9000/user/flp/datatest";
-		String output = "hdfs://namenode:9000/user/flp/data_result";
+		String input = "hdfs://192.168.1.206:9000/user/flp/data";
+		String output = "hdfs://192.168.1.206:9000/user/flp/data_result";
 
 		JobConf conf = new JobConf(Analysis.class);
 		conf.setJobName(" Analysis");

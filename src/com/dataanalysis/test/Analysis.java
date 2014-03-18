@@ -1,7 +1,10 @@
 package com.dataanalysis.test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.fs.Path;
@@ -25,40 +28,49 @@ import com.dataanalysis.hdfs.HdfsDAO;
 
 public class Analysis {
 
+	public static String ListToString(List<String> stringList) {
+
+		StringBuffer buffer = new StringBuffer();
+		boolean flag = false;
+		for (String string : stringList) {
+			if (flag) {
+				buffer.append("	");
+			} else {
+				flag = true;
+			}
+			buffer.append(string);
+		}
+		return buffer.toString();
+	}
+
 	public static class AnalysisMapper extends MapReduceBase implements
 			Mapper<Object, Text, NullWritable, Text> {
 		private final static NullWritable myNull = NullWritable.get();
+		private final static int[] indexArr = new int[] {4,10,14,15,16,17, 18, 23, 24,25 };
 
 		@Override
 		public void map(Object key, Text value,
 				OutputCollector<NullWritable, Text> output, Reporter reporter)
 				throws IOException {
-			String[] tokens = value.toString().split("	");
-			if (Float.valueOf(tokens[0]) != 0) {
-				output.collect(myNull, value);
+			List tokens = new ArrayList(Arrays.asList(value.toString().split("	")));
+			// if (Float.valueOf(tokens[0]) != 0) {
+			// output.collect(myNull, value);
+			// }
+			String end = tokens.get(24).toString();
+			
+			for (int i = indexArr.length - 1; i >= 0; i--) {
+				if (i <= tokens.size()) {
+					tokens.remove(indexArr[i]-1);
+				}
 			}
+			tokens.add(end);
+			output.collect(myNull, new Text(ListToString(tokens)));
 
 		}
 	}
 
-//	public static class WordCountReducer extends MapReduceBase implements
-//			Reducer<Text, IntWritable, Text, IntWritable> {
-//		private IntWritable result = new IntWritable();
-//
-//		@Override
-//		public void reduce(Text key, Iterator<IntWritable> values,
-//				OutputCollector<Text, IntWritable> output, Reporter reporter)
-//				throws IOException {
-//			int sum = 0;
-//			while (values.hasNext()) {
-//				sum += values.next().get();
-//			}
-//			output.collect(key, result);
-//		}
-//	}
-
 	public static void main(String[] args) throws Exception {
-		String input = "hdfs://namenode:9000/user/flp/data";
+		String input = "hdfs://namenode:9000/user/flp/datatest";
 		String output = "hdfs://namenode:9000/user/flp/data_result";
 
 		JobConf conf = new JobConf(Analysis.class);
@@ -67,9 +79,7 @@ public class Analysis {
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
 
-		conf.setMapperClass( AnalysisMapper.class);
-		// conf.setCombinerClass(WordCountReducer.class);
-		// conf.setReducerClass(WordCountReducer.class);
+		conf.setMapperClass(AnalysisMapper.class);
 
 		conf.setOutputKeyClass(NullWritable.class);
 		conf.setOutputValueClass(Text.class);

@@ -25,7 +25,7 @@ import com.dataanalysis.hdfs.HdfsDAO;
 
 public class Analysis {
 
-	public static class WordCountMapper extends MapReduceBase implements
+	public static class AnalysisMapper extends MapReduceBase implements
 			Mapper<Object, Text, NullWritable, Text> {
 		private final static NullWritable myNull = NullWritable.get();
 
@@ -62,12 +62,12 @@ public class Analysis {
 		String output = "hdfs://namenode:9000/user/flp/data_result";
 
 		JobConf conf = new JobConf(Analysis.class);
-		conf.setJobName("WordCount");
+		conf.setJobName(" Analysis");
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
 
-		conf.setMapperClass(WordCountMapper.class);
+		conf.setMapperClass( AnalysisMapper.class);
 		// conf.setCombinerClass(WordCountReducer.class);
 		// conf.setReducerClass(WordCountReducer.class);
 

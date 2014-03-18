@@ -71,7 +71,7 @@ public class Analysis {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String input = "hdfs://192.168.1.206:9000/user/flp/data";
+		String input = "hdfs://192.168.1.206:9000/user/flp/datatest";
 		String output = "hdfs://192.168.1.206:9000/user/flp/data_result";
 
 		JobConf conf = new JobConf(Analysis.class);

@@ -1,6 +1,7 @@
 package com.dataanalysis.test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -31,26 +32,41 @@ public class Analysis_Two {
 	public static class AnalysisMapper extends MapReduceBase implements
 			Mapper<Object, Text, Text, IntWritable> {
 		private final static IntWritable one = new IntWritable(1);
-		
+		private Text word = new Text();
 
 		@Override
 		public void map(Object key, Text value,
 				OutputCollector<Text, IntWritable> output, Reporter reporter)
 				throws IOException {
-				String[] tokens = value.toString().split("	");
-				
 
+			List<String> tokens = new ArrayList<String>(Arrays.asList(value
+					.toString().split("	")));
+			int sum = 0;
+			for (int i = 0; i < 4; i++) {
+				if (Float.parseFloat(tokens.get(11 + i)) != 0) {
+					sum++;
+				}
+			}
+			word.set("daughter num:"+String.valueOf(sum));
+			output.collect(word, one);
 		}
 	}
 
-	public static class AnalysisReducer extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class AnalysisReducer extends MapReduceBase implements
+			Reducer<Text, IntWritable, Text, IntWritable> {
+		private IntWritable result = new IntWritable();
 
 		@Override
-		public void reduce(Text arg0, Iterator<IntWritable> arg1,
-				OutputCollector<Text, IntWritable> arg2, Reporter arg3)
+		public void reduce(Text key, Iterator<IntWritable> values,
+				OutputCollector<Text, IntWritable> output, Reporter reporter)
 				throws IOException {
-			// TODO Auto-generated method stub
-			
+			int sum = 0;
+			while (values.hasNext()) {
+				sum += values.next().get();
+			}
+			result.set(sum);
+			output.collect(key, result);
+
 		}
 
 	}
@@ -60,12 +76,13 @@ public class Analysis_Two {
 		String output = "hdfs://namenode:9000/user/flp/data_result";
 
 		JobConf conf = new JobConf(Analysis.class);
-		conf.setJobName("WordCount");
+		conf.setJobName("Analysis_Two");
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
 
 		conf.setMapperClass(AnalysisMapper.class);
+		conf.setCombinerClass(AnalysisReducer.class);
 		conf.setReducerClass(AnalysisReducer.class);
 		// conf.setCombinerClass(WordCountReducer.class);
 		// conf.setReducerClass(WordCountReducer.class);

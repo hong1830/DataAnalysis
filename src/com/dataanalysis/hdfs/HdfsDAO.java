@@ -34,7 +34,7 @@ public class HdfsDAO {
         HdfsDAO hdfs = new HdfsDAO(conf);
 //        hdfs.copyFile("datafile/item.csv", "/tmp/new");
 //        hdfs.ls("/tmp/new");
-        hdfs.rename("/user/flp/datatest1", "/user/flp/datatest");
+        hdfs.rename("/user/flp/data_result", "/user/flp/data");
     }
 
 

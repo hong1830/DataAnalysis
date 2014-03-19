@@ -18,6 +18,7 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import com.dataanalysis.hdfs.HdfsDAO;
@@ -123,6 +124,8 @@ public class addFrom {
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
+		
+		
 
 		job.setMapperClass(AddFromMapper.class);
 //		job.setCombinerClass(AddFromReducer.class);
@@ -131,12 +134,13 @@ public class addFrom {
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(Text.class);
 		job.setOutputValueClass(Text.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setPartitionerClass(TotalOrderPartitioner.class);
 
 		FileInputFormat.setInputPaths(job, new Path(input1), new Path(input2));
 		FileOutputFormat.setOutputPath(job, new Path(output));
 
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		job.setOutputFormatClass(TextOutputFormat.class);
 
 	}
 }

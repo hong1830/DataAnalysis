@@ -39,8 +39,6 @@ public class From {
 	public static class AnalysisMapper extends MapReduceBase implements
 			Mapper<Object, Text, NullWritable, Text> {
 		private final static NullWritable myNull = NullWritable.get();
-		private final static int[] indexArr = new int[] { 4, 10, 14, 15, 16,
-				17, 18, 23, 24, 25 };
 
 		@Override
 		public void map(Object key, Text value,
@@ -48,24 +46,20 @@ public class From {
 				throws IOException {
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
-			if (Float.parseFloat(tokens.get(0).toString()) != 0) {
-				String end = tokens.get(24).toString();
+			ArrayList<String> fromList = new ArrayList<String>();
+			fromList.add(tokens.get(0));
+			fromList.add(tokens.get(5));
+			fromList.add(tokens.get(6));
+			fromList.add(tokens.get(7));
 
-				for (int i = indexArr.length - 1; i >= 0; i--) {
-					if (i <= tokens.size()) {
-						tokens.remove(indexArr[i] - 1);
-					}
-				}
-				tokens.add(end);
-				output.collect(myNull, new Text(ListToString(tokens)));
-			}
+			output.collect(myNull, new Text(ListToString(fromList)));
 
 		}
 	}
 
 	public static void main(String[] args) throws Exception {
-		String input = "hdfs://192.168.1.206:9000/user/flp/data_from";
-		String output = "hdfs://192.168.1.206:9000/user/flp/data";
+		String input = "hdfs://192.168.1.206:9000/user/flp/data_result_from";
+		String output = "hdfs://192.168.1.206:9000/user/flp/data_from";
 
 		JobConf conf = new JobConf(Analysis.class);
 		conf.setJobName("from");

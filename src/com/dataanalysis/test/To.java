@@ -37,12 +37,12 @@ public class To {
 	}
 
 	public static class ToMapper extends MapReduceBase implements
-			Mapper<Object, Text, NullWritable, Text> {
-		private final static NullWritable myNull = NullWritable.get();
+			Mapper<Object, Text, Text, Text> {
+		
 
 		@Override
 		public void map(Object key, Text value,
-				OutputCollector<NullWritable, Text> output, Reporter reporter)
+				OutputCollector<Text, Text> output, Reporter reporter)
 				throws IOException {
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
@@ -52,13 +52,13 @@ public class To {
 			fromList.add(tokens.get(9));
 			fromList.add(tokens.get(10));
 
-			output.collect(myNull, new Text(ListToString(fromList)));
+			output.collect(new Text("To"), new Text(ListToString(fromList)));
 
 		}
 	}
 
 	public static void main(String[] args) throws Exception {
-		String input = "hdfs://192.168.1.206:9000/user/flp/data";
+		String input = "hdfs://192.168.1.206:9000/user/flp/data_result_from";
 		String output = "hdfs://192.168.1.206:9000/user/flp/data_to";
 
 		JobConf conf = new JobConf(Analysis.class);
@@ -69,7 +69,7 @@ public class To {
 
 		conf.setMapperClass(ToMapper.class);
 
-		conf.setOutputKeyClass(NullWritable.class);
+		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(Text.class);
 
 		FileInputFormat.setInputPaths(conf, new Path(input));

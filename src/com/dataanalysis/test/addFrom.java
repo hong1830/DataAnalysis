@@ -6,94 +6,134 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.Mapper;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reducer;
-import org.apache.hadoop.mapred.Reporter;
+
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import com.dataanalysis.hdfs.HdfsDAO;
+import com.sun.jndi.cosnaming.IiopUrl.Address;
 
 public class addFrom {
-	public static class AddFromMapper extends MapReduceBase implements
-			Mapper<Object, Text, Text, Text> {
-		
-		public static String ListToString(List<String> stringList) {
 
-			StringBuffer buffer = new StringBuffer();
-			boolean flag = false;
-			for (String string : stringList) {
-				if (flag) {
-					buffer.append("	");
-				} else {
-					flag = true;
-				}
-				buffer.append(string);
+	public static String ListToString(List<String> stringList) {
+
+		StringBuffer buffer = new StringBuffer();
+		boolean flag = false;
+		for (String string : stringList) {
+			if (flag) {
+				buffer.append("	");
+			} else {
+				flag = true;
 			}
-			return buffer.toString();
+			buffer.append(string);
 		}
+		return buffer.toString();
+	}
+
+	public static class AddFromMapper extends Mapper<Object, Text, Text, Text> {
 
 		@Override
-		public void map(Object key, Text value,
-				OutputCollector<Text, Text> output, Reporter reporter)
-				throws IOException {
+		protected void map(Object key, Text value, Context context)
+				throws IOException, InterruptedException {
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
 			ArrayList<String> list = new ArrayList<String>();
 			list.add(tokens.get(2));
 			list.add(tokens.get(3));
 			list.add(tokens.get(4));
-			output.collect(new Text(ListToString(list)), new Text((tokens.get(1)).toString()+"	"+tokens.get(0).toLowerCase()));
-
-		}
-	}
-
-	public static class AddFromReducer extends MapReduceBase implements
-			Reducer<Text, Text, Text, Text> {
-
-		@Override
-		public void reduce(Text key, Iterator<Text> values,
-				OutputCollector<Text, Text> output, Reporter reporter)
-				throws IOException {
+			context.write(new Text(ListToString(list)), new Text(
+					(tokens.get(1)).toString() + "	"
+							+ tokens.get(0).toLowerCase()));
 
 		}
 
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static class AddFromReducer extends Reducer<Text, Text, Text, Text> {
+
+		protected void reduce(Text key, Iterable<Text> values, Context context)
+				throws IOException, InterruptedException {
+			ArrayList<String> fromList = new ArrayList<String>();
+			ArrayList<String> toList = new ArrayList<String>();
+			String[] values_split = null;
+			while (values.iterator().hasNext()) {
+				values_split = values.iterator().next().toString().split("	");
+				if (values_split[1].equalsIgnoreCase("from")) {
+					fromList.add(values_split[0]);
+				} else {
+					toList.add(values_split[0]);
+				}
+			}
+			if (fromList.size() != 0) {
+				for (String string : fromList) {
+					context.write(new Text(string), new Text(
+							ListToString(toList)));
+
+				}
+			}
+
+		}
+
+		// @Override
+		// public void reduce(Text key, Iterator<Text> values,
+		// OutputCollector<Text, Text> output, Reporter reporter)
+		// throws IOException {
+		// ArrayList<String> fromList = new ArrayList<String>();
+		// ArrayList<String> toList = new ArrayList<String>();
+		// String[] values_split = null;
+		// while (values.hasNext()) {
+		// values_split = values.next().toString().split("	");
+		// if (values_split[1].equalsIgnoreCase("from")) {
+		// fromList.add(values_split[0]);
+		// } else {
+		// toList.add(values_split[0]);
+		// }
+		// }
+		// if (fromList.size() != 0) {
+		// for (String string : fromList) {
+		// output.collect(new Text(string), new Text(
+		// ListToString(toList)));
+		//
+		// }
+		// }
+		//
+		// }
+	}
+
+	public static void main(String[] args) throws Exception {
 		String input1 = "hdfs://namenode:9000/user/flp/data_to";
 		String input2 = "hdfs://namenode:9000/user/flp/data_from";
 		String output = "hdfs://namenode:9000/user/flp/data_addfrom";
 
-		JobConf conf = new JobConf(Analysis.class);
-		conf.setJobName("addfrom");
+		Configuration conf = new Configuration();
+
+		Job job = new Job(conf, "addfrom");
+		job.setJarByClass(addFrom.class);
+		job.setMapperClass(AddFromMapper.class);
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
 
-		conf.setMapperClass(AddFromMapper.class);
-//		conf.setCombinerClass(AddFromReducer.class);
-//		conf.setReducerClass(AddFromReducer.class);
-		conf.setOutputKeyClass(Text.class);
-		conf.setOutputValueClass(Text.class);
+		job.setMapperClass(AddFromMapper.class);
+		job.setCombinerClass(AddFromReducer.class);
+		job.setReducerClass(AddFromReducer.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
 
-		conf.setInputFormat(TextInputFormat.class);
-		conf.setOutputFormat(TextOutputFormat.class);
+		FileInputFormat.setInputPaths(job, new Path(input1), new Path(input2));
+		FileOutputFormat.setOutputPath(job, new Path(output));
 
-		FileInputFormat.setInputPaths(conf, new Path(input1), new Path(input2));
-		FileOutputFormat.setOutputPath(conf, new Path(output));
-
-		JobClient.runJob(conf);
-		System.exit(0);
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
 
 	}
 }

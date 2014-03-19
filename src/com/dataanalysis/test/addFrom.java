@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -58,7 +59,7 @@ public class addFrom {
 
 	}
 
-	public static class AddFromReducer extends Reducer<Text, Text, Text, Text> {
+	public static class AddFromReducer extends Reducer<Text, Text, FloatWritable, Text> {
 
 		protected void reduce(Text key, Iterable<Text> values, Context context)
 				throws IOException, InterruptedException {
@@ -75,7 +76,7 @@ public class addFrom {
 			}
 			if (fromList.size() != 0) {
 				for (String string : fromList) {
-					context.write(new Text(string), new Text(
+					context.write(new FloatWritable(Float.valueOf(string)), new Text(
 							ListToString(toList)));
 
 				}
@@ -124,9 +125,11 @@ public class addFrom {
 		hdfs.rmr(output);
 
 		job.setMapperClass(AddFromMapper.class);
-		job.setCombinerClass(AddFromReducer.class);
+//		job.setCombinerClass(AddFromReducer.class);
 		job.setReducerClass(AddFromReducer.class);
-		job.setOutputKeyClass(Text.class);
+		job.setOutputKeyClass(FloatWritable.class);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 

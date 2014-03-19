@@ -19,8 +19,8 @@ import org.apache.hadoop.mapred.Reporter;
 
 import com.dataanalysis.hdfs.HdfsDAO;
 
-public class From {
-
+public class To {
+	
 	public static String ListToString(List<String> stringList) {
 
 		StringBuffer buffer = new StringBuffer();
@@ -36,7 +36,7 @@ public class From {
 		return buffer.toString();
 	}
 
-	public static class FromMapper extends MapReduceBase implements
+	public static class ToMapper extends MapReduceBase implements
 			Mapper<Object, Text, NullWritable, Text> {
 		private final static NullWritable myNull = NullWritable.get();
 
@@ -48,9 +48,9 @@ public class From {
 					.toString().split("	")));
 			ArrayList<String> fromList = new ArrayList<String>();
 			fromList.add(tokens.get(0));
-			fromList.add(tokens.get(5));
-			fromList.add(tokens.get(6));
-			fromList.add(tokens.get(7));
+			fromList.add(tokens.get(8));
+			fromList.add(tokens.get(9));
+			fromList.add(tokens.get(10));
 
 			output.collect(myNull, new Text(ListToString(fromList)));
 
@@ -59,15 +59,15 @@ public class From {
 
 	public static void main(String[] args) throws Exception {
 		String input = "hdfs://192.168.1.206:9000/user/flp/data";
-		String output = "hdfs://192.168.1.206:9000/user/flp/data_from";
+		String output = "hdfs://192.168.1.206:9000/user/flp/data_to";
 
 		JobConf conf = new JobConf(Analysis.class);
-		conf.setJobName("from");
+		conf.setJobName("to");
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
 
-		conf.setMapperClass(FromMapper.class);
+		conf.setMapperClass(ToMapper.class);
 
 		conf.setOutputKeyClass(NullWritable.class);
 		conf.setOutputValueClass(Text.class);

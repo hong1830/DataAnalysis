@@ -21,6 +21,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 
+
 import com.dataanalysis.hdfs.HdfsDAO;
 import com.sun.jndi.cosnaming.IiopUrl.Address;
 
@@ -84,32 +85,8 @@ public class addFrom {
 			}
 
 		}
-
-		// @Override
-		// public void reduce(Text key, Iterator<Text> values,
-		// OutputCollector<Text, Text> output, Reporter reporter)
-		// throws IOException {
-		// ArrayList<String> fromList = new ArrayList<String>();
-		// ArrayList<String> toList = new ArrayList<String>();
-		// String[] values_split = null;
-		// while (values.hasNext()) {
-		// values_split = values.next().toString().split("	");
-		// if (values_split[1].equalsIgnoreCase("from")) {
-		// fromList.add(values_split[0]);
-		// } else {
-		// toList.add(values_split[0]);
-		// }
-		// }
-		// if (fromList.size() != 0) {
-		// for (String string : fromList) {
-		// output.collect(new Text(string), new Text(
-		// ListToString(toList)));
-		//
-		// }
-		// }
-		//
-		// }
 	}
+	
 
 	public static void main(String[] args) throws Exception {
 		String input1 = "hdfs://namenode:9000/user/flp/data_to";
@@ -120,7 +97,6 @@ public class addFrom {
 
 		Job job = new Job(conf, "addfrom");
 		job.setJarByClass(addFrom.class);
-		job.setMapperClass(AddFromMapper.class);
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
@@ -128,13 +104,11 @@ public class addFrom {
 		
 
 		job.setMapperClass(AddFromMapper.class);
-//		job.setCombinerClass(AddFromReducer.class);
 		job.setReducerClass(AddFromReducer.class);
 		job.setOutputKeyClass(FloatWritable.class);
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(Text.class);
 		job.setOutputValueClass(Text.class);
-		job.setPartitionerClass(TotalOrderPartitioner.class);
 
 		FileInputFormat.setInputPaths(job, new Path(input1), new Path(input2));
 		FileOutputFormat.setOutputPath(job, new Path(output));

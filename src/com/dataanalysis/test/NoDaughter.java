@@ -42,8 +42,8 @@ public class NoDaughter {
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
 			int sum = 0;
-			for (int i = 0; i < 4; i++) {
-				if (Float.parseFloat(tokens.get(11 + i)) != 0) {
+			for (int i = 1; i < tokens.size(); i++) {
+				if (Float.parseFloat(tokens.get(i)) != 0) {
 					sum++;
 				}
 			}

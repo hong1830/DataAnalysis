@@ -42,8 +42,9 @@ public class Analysis_Two {
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
 			int sum = 0;
-			for (int i = 0; i < 4; i++) {
-				if (Float.parseFloat(tokens.get(11 + i)) != 0) {
+		
+			for (int i = 1; i < tokens.size(); i++) {
+				if (Float.parseFloat(tokens.get(i)) != 0) {
 					sum++;
 				}
 			}
@@ -72,8 +73,8 @@ public class Analysis_Two {
 	}
 
 	public static void main(String[] args) throws IOException {
-		String input = "hdfs://namenode:9000/user/flp/data";
-		String output = "hdfs://namenode:9000/user/flp/data_result";
+		String input = "hdfs://namenode:9000/user/flp/"+ args[0];
+		String output = "hdfs://namenode:9000/user/flp/" +args[1];
 
 		JobConf conf = new JobConf(Analysis.class);
 		conf.setJobName("Analysis_Two");

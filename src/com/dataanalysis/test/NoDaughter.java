@@ -83,8 +83,9 @@ public class NoDaughter {
 //	}
 
 	public static void main(String[] args) throws IOException {
-		String input = "hdfs://namenode:9000/user/flp/data";
-		String output = "hdfs://namenode:9000/user/flp/data_daughter";
+		String input = "hdfs://namenode:9000/user/flp/"+ args[1];
+		String output = "hdfs://namenode:9000/user/flp/" +args[2];
+
 		
 		Integer d_Num = Integer.valueOf(args[0]);
 		

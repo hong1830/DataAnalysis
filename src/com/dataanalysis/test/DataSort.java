@@ -83,8 +83,8 @@ public class DataSort {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String input = "hdfs://namenode:9000/user/flp/"+args[0];
-		String output = "hdfs://namenode:9000/user/flp/data_sort";
+		String input = "hdfs://namenode:9000/user/flp/"+ args[0];
+		String output = "hdfs://namenode:9000/user/flp/" +args[1];
 
 		Configuration conf = new Configuration();
 

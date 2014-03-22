@@ -4,27 +4,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import com.dataanalysis.hdfs.HdfsDAO;
 import com.dataanalysis.test.addFrom;
-import com.dataanalysis.test.Delete_SZero.DeleteMap;
-import com.dataanalysis.test.Delete_SZero.DeleteReduce;
 
 public class Step1_delete {
 
@@ -38,7 +32,7 @@ public class Step1_delete {
 					.toString().split("	")));
 			context.write(new FloatWritable(Float.valueOf(tokens.get(0))),
 					new Text("legal"));
-			for (int i = 11; i < 4; i++) {
+			for (int i = 11; i < 14; i++) {
 				if (!(Float.valueOf(tokens.get(i)) == 0)) {
 					context.write(
 							new FloatWritable(Float.valueOf(tokens.get(i))),
@@ -81,8 +75,8 @@ public class Step1_delete {
 
 		Configuration conf = new Configuration();
 
-		Job job = new Job(conf, "delete");
-		job.setJarByClass(addFrom.class);
+		Job job = new Job(conf, "Analysis");
+		job.setJarByClass(Analysis.class);
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
@@ -96,9 +90,12 @@ public class Step1_delete {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+
 		FileInputFormat.setInputPaths(job, new Path(input));
 		FileOutputFormat.setOutputPath(job, new Path(output));
+		
 		job.waitForCompletion(true);
-
 	}
 }

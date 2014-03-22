@@ -70,7 +70,6 @@ public class Step3_Add {
 					
 				}
 			}
-			System.out.println(ListToString(result) + "	" + add + "	" + end);
 			output.set(ListToString(result) + "	" + add + "	" + end);
 			context.write(key, output);
 

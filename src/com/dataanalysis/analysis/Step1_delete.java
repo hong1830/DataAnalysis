@@ -42,7 +42,7 @@ public class Step1_delete {
 				if (!(Float.valueOf(tokens.get(i)) == 0)) {
 					context.write(
 							new FloatWritable(Float.valueOf(tokens.get(i))),
-							value);
+							new Text(tokens.get(0)));
 				}
 			}
 		}
@@ -57,7 +57,6 @@ public class Step1_delete {
 			List<String> outputs = new ArrayList<String>();
 			while (values.iterator().hasNext()) {
 				String value = values.iterator().next().toString();
-				System.out.println(value);
 				if (value.equals("legal")) {
 					isExists = true;
 				} else {
@@ -68,10 +67,7 @@ public class Step1_delete {
 				context.write(new FloatWritable(Float.valueOf(key.toString())),
 						new Text("0.0"));
 				for (String output : outputs) {
-					List<String> outputList = new ArrayList<String>(
-							Arrays.asList(output.split("\t")));
-					context.write(
-							new FloatWritable(Float.valueOf(outputList.get(0))),
+					context.write(new FloatWritable(Float.valueOf(output)),
 							new Text(key.toString()));
 				}
 			}

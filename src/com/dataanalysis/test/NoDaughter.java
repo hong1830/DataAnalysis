@@ -42,7 +42,7 @@ public class NoDaughter {
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
 			int sum = 0;
-			for (int i = 1; i < tokens.size(); i++) {
+			for (int i = 11; i < 15; i++) {
 				if (Float.parseFloat(tokens.get(i)) != 0) {
 					sum++;
 				}
@@ -92,7 +92,7 @@ public class NoDaughter {
 		
 
 		JobConf conf = new JobConf(Analysis.class);
-		conf.setJobName("Analysis_Two");
+		conf.setJobName("NumDaughterjps");
 		
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);

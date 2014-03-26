@@ -17,7 +17,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import com.dataanalysis.hdfs.HdfsDAO;
-import com.dataanalysis.test.addFrom;
 
 public class Step2_Merger {
 

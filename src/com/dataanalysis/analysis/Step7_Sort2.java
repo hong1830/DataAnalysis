@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -17,10 +18,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import com.dataanalysis.hdfs.HdfsDAO;
-import com.dataanalysis.test.DataSort.SortMapper;
-import com.dataanalysis.test.DataSort.SortReducer;
 
-public class Step4_Sort {
+public class Step7_Sort2 {
 
 	public static String ListToString(List<String> stringList) {
 		StringBuffer buffer = new StringBuffer();
@@ -36,39 +35,44 @@ public class Step4_Sort {
 		return buffer.toString();
 	}
 
-	public static class SortMap extends
+	public static class Sort2Map extends
 			Mapper<Object, Text, FloatWritable, Text> {
+
+		FloatWritable mapKey = new FloatWritable();
 
 		@Override
 		protected void map(Object key, Text value, Context context)
 				throws IOException, InterruptedException {
+
 			List<String> tokens = new ArrayList<String>(Arrays.asList(value
 					.toString().split("	")));
-			FloatWritable segment = new FloatWritable(Float.valueOf(tokens
-					.get(0)));
-			tokens.remove(0);
-			context.write(segment, new Text(ListToString(tokens)));
-
+			mapKey.set(Float.valueOf(tokens.get(0)));
+			context.write(mapKey, value);
 		}
 
 	}
 
-	public static class SortReduce extends
-			Reducer<FloatWritable, Text, FloatWritable, Text> {
+	public static class Sort2Reduce extends
+			Reducer<FloatWritable, Text, NullWritable, Text> {
+		FloatWritable num = new FloatWritable(1);
+		NullWritable mynull = NullWritable.get();
+		Text out = new Text();
 
 		protected void reduce(FloatWritable key, Iterable<Text> values,
 				Context context) throws IOException, InterruptedException {
-			for (Text value : values) {
-				context.write(key, value);
+			while (values.iterator().hasNext()) {
+				num.set(num.get() + 1);
+				out.set(values.iterator().next().toString() + "	" + num.get());
+				context.write(mynull, out);
 			}
 		}
-
 	}
 
 	public static class Partition extends Partitioner<FloatWritable, Text> {
 
 		@Override
 		public int getPartition(FloatWritable key, Text values, int numPartition) {
+			// TODO Auto-generated method stub
 			int maxNumber = 5500000;
 
 			int bound = maxNumber / numPartition + 1;
@@ -90,18 +94,18 @@ public class Step4_Sort {
 
 		Configuration conf = new Configuration();
 
-		Job job = new Job(conf, "Sort");
-		job.setJarByClass(Step4_Sort.class);
+		Job job = new Job(conf, "Sort2");
+		job.setJarByClass(Step7_Sort2.class);
 
 		HdfsDAO hdfs = new HdfsDAO("hdfs://192.168.1.206:9000", conf);
 		hdfs.rmr(output);
 
-		job.setMapperClass(SortMapper.class);
-		job.setReducerClass(SortReducer.class);
+		job.setMapperClass(Sort2Map.class);
+		job.setReducerClass(Sort2Reduce.class);
 		job.setPartitionerClass(Partition.class);
 		job.setMapOutputKeyClass(FloatWritable.class);
 		job.setMapOutputValueClass(Text.class);
-		job.setOutputKeyClass(FloatWritable.class);
+		job.setOutputKeyClass(NullWritable.class);
 		job.setOutputValueClass(Text.class);
 
 		FileInputFormat.setInputPaths(job, new Path(input));
